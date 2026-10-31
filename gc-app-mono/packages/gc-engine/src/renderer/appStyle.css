@@ -1,0 +1,58 @@
+@import 'ldrs/react/Waveform.css';
+
+:root {
+    --gc-app-button-text-light: #ccc;
+    --gc-app-button-text-dark: #ccc;
+
+    --gc-app-button-text-hover-light: #0056b3;
+    --gc-app-button-text-hover-dark: #74c0fc;
+}
+
+/* 暗色主题 */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /*--button-bg: var(--button-bg-dark);*/
+        --gc-app-button-text: var(--gc-app-button-text-light);
+        --gc-app-button-text-hover: var(--gc-app-button-text-hover-light);
+    }
+}
+
+/* 亮色主题 */
+@media (prefers-color-scheme: light) {
+    :root {
+        /*--button-bg: var(--button-bg-light);*/
+        --gc-app-button-text: var(--gc-app-button-text-dark);
+        --gc-app-button-text-hover: var(--gc-app-button-text-hover-dark);
+    }
+}
+
+.gc-app-icon {
+    cursor: pointer;
+    pointer-events: auto;
+    color: var(--gc-app-button-text);
+    transition: all 0.3s ease;
+}
+
+.gc-app-icon:hover {
+    color: var(--gc-app-button-text-hover);
+    /*filter: invert(1) hue-rotate(180deg);*/
+    transition: all 0.3s ease;
+}
+
+
+/*export const messageReactRootSelector = "gc-receive-message";*/
+/*export const inputRTTReactRootSelector = "gc-input-rtt-container";*/
+/*export const gcEngineAppRootId = "gc-app-root";*/
+
+
+.gc-input-rtt-container{
+    width: 100%;
+}
+.gc-receive-message{
+
+}
+
+/*div = document.createElement("div");*/
+/*div.style.width = "100%";*/
+/*div.className = inputRTTReactRootSelector;*/
+/*container.insertBefore(div, container.firstElementChild);*/

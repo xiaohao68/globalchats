@@ -1,0 +1,18 @@
+query ImtpWhatsappAggregatePollConversations($input: ImtpPollConversationsInput!) {
+  imtp {
+    whatsapp {
+      aggregatePollConversations(input: $input) {
+        conversations {
+          id
+          jid
+          imtpWhatsappAccountId
+          data
+          createdAt
+          updatedAt
+        }
+        hasMore
+        nextCursor
+      }
+    }
+  }
+}

@@ -1,0 +1,154 @@
+/**
+ * Global Chats - 沉浸式玻璃设计系统令牌
+ * 这些变量用于玻璃拟态、极光渐变和微交互
+ */
+
+@layer base {
+  :root {
+    /* 背景层级 */
+    --gc-bg-primary: #000000;
+    --gc-surface-1: rgba(255, 255, 255, 0.08);
+    --gc-surface-2: rgba(255, 255, 255, 0.12);
+    --gc-surface-3: rgba(255, 255, 255, 0.16);
+
+    /* 品牌色 */
+    --gc-brand: #007aff;
+    --gc-brand-glow: rgba(0, 122, 255, 0.4);
+    --gc-brand-gradient-start: #007aff;
+    --gc-brand-gradient-end: #5856d6;
+
+    /* 文字层级 */
+    --gc-text-primary: rgba(255, 255, 255, 0.95);
+    --gc-text-secondary: rgba(255, 255, 255, 0.7);
+    --gc-text-tertiary: rgba(255, 255, 255, 0.5);
+
+    /* 边框和阴影 */
+    --gc-border-subtle: rgba(255, 255, 255, 0.1);
+    --gc-border-hover: rgba(255, 255, 255, 0.15);
+    --gc-shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --gc-shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.4);
+
+    /* 圆角 */
+    --gc-radius-sm: 12px;
+    --gc-radius-md: 16px;
+    --gc-radius-lg: 24px;
+    --gc-radius-xl: 28px;
+
+    /* 动效 */
+    --gc-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --gc-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --gc-ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --gc-duration-fast: 150ms;
+    --gc-duration-normal: 300ms;
+    --gc-duration-slow: 500ms;
+  }
+}
+
+/* 极光背景动画 */
+@keyframes aurora-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* 光晕脉冲动画 */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 122, 255, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 122, 255, 0.2);
+  }
+}
+
+/* 入场动画 */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 玻璃拟态工具类 */
+@layer components {
+  .gc-glass {
+    background: var(--gc-surface-1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--gc-border-subtle);
+    border-radius: var(--gc-radius-lg);
+    box-shadow: var(--gc-shadow-glass);
+  }
+
+  .gc-glass-hover:hover {
+    background: var(--gc-surface-2);
+    border-color: var(--gc-border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--gc-shadow-glass-hover);
+  }
+
+  .gc-glass-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--gc-radius-md);
+    color: var(--gc-text-primary);
+    transition: all var(--gc-duration-normal) var(--gc-ease-smooth);
+  }
+
+  .gc-glass-input:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 122, 255, 0.5);
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
+    outline: none;
+  }
+
+  .gc-aurora-bg {
+    background: linear-gradient(
+      135deg,
+      #0a0a1a 0%,
+      #1a1a3e 20%,
+      #16213e 40%,
+      #0f3460 60%,
+      #007aff 80%,
+      #5856d6 100%
+    );
+    background-size: 400% 400%;
+    animation: aurora-flow 15s ease infinite;
+  }
+
+  .gc-text-gradient {
+    background: linear-gradient(135deg, #007aff, #5856d6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

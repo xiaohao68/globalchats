@@ -1,0 +1,15 @@
+query GetConversations($accountId: String, $updatedAfter: Float) {
+  getConversations(accountId: $accountId, updatedAfter: $updatedAfter) {
+    id
+    accountId
+    contactId
+    contactNickname
+    contactAvatar
+    isGroup
+    lastMessage
+    lastMessageTime
+    unreadCount
+    version
+    updatedAt
+  }
+}

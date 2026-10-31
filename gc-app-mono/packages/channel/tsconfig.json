@@ -1,0 +1,10 @@
+{
+  "extends": "@gc/typescript-config",
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "build"],
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false
+  }
+}
+

@@ -1,0 +1,25 @@
+import { FC } from "react";
+import { LucideProps } from "lucide-react";
+import { cn } from "@gc/lib/utils.ts";
+
+export const IconAdd: FC<LucideProps> = ({
+  size = 16,
+  className,
+  ...props
+}) => (
+  <svg
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    className={cn("fill-current", className)}
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M7.5 12.5C7.5 12.7761 7.72386 13 8 13C8.27614 13 8.5 12.7761 8.5 12.5V8H13C13.2761 8 13.5 7.77614 13.5 7.5C13.5 7.22386 13.2761 7 13 7H8.5V2.5C8.5 2.22386 8.27614 2 8 2C7.72386 2 7.5 2.22386 7.5 2.5V7H3C2.72386 7 2.5 7.22386 2.5 7.5C2.5 7.77614 2.72386 8 3 8H7.5V12.5Z"
+    />
+  </svg>
+);

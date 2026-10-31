@@ -1,0 +1,8 @@
+{
+  "extends": "@gc/typescript-config",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}

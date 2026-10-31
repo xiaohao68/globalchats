@@ -1,0 +1,75 @@
+[workspace]
+resolver = "2"
+members = []
+
+[package]
+name = "global-chat-desktop"
+version = "1.3.0"
+description = "Global Chats Desktop App"
+authors = ["genki"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "global_chat_desktop_lib"
+crate-type = ["cdylib", "rlib"]
+
+[profile.dev]
+incremental = true
+opt-level = 0
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[build-dependencies]
+tauri-build = { version = "2.5.5", features = [] }
+
+[dependencies]
+tauri = { version = "2.10.2", features = ["macos-private-api", "unstable", "macos-proxy"] }
+tauri-cli = "2.10.0"
+
+tokio = { version = "1.48.0", features = ["full"] }
+uuid = { version = "1.19.0", features = ["v4"] }
+anyhow = "1.0.100"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.148"
+log = "0.4.29"
+once_cell = "1.21.3"
+tauri-plugin-log = "2.8.0"
+tauri-plugin-shell = "2.3.5"
+tauri-plugin-store = "2.4.2"
+tauri-plugin-http = { version = "2.5.7", features = ["unsafe-headers"] }
+tauri-plugin-opener = "2.5.3"
+# 2026-10-20：从 PostgreSQL 换成 SQLite。
+# SQLite 是**编译进 exe 的库**（libsqlite3-sys 会把 C 源码一起编进来），
+# 不是独立服务 —— 业务员拿到 exe 双击就能跑，不用装数据库、不用配地址、不用开服务。
+# 代价只是「不能被远程连」，而本产品是一个人一台机器、数据不汇总，正好不需要。
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono", "uuid"] }
+chrono = { version = "0.4", features = ["serde"] }
+jsonwebtoken = "9"
+bcrypt = "0.15"
+tauri-plugin-process = "2.3.1"
+tauri-plugin-dialog = "2.6.0"
+sentry = "0.46.0"
+dotenv = "0.15.0"
+tauri-plugin-notification = "2.3.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+backtrace = "0.3"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2.10.0"
+
+[dev-dependencies]
+tempfile = "3.14"
+
+[profile.dev.package.objc2]
+debug-assertions = false

@@ -1,0 +1,11 @@
+query GetAccounts {
+  getAccounts {
+    id
+    platform
+    userId
+    nickname
+    avatar
+    version
+    updatedAt
+  }
+}

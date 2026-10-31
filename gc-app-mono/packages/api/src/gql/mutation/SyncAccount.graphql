@@ -1,0 +1,11 @@
+mutation SyncAccount($input: SyncAccountInput!) {
+  syncAccount(input: $input) {
+    id
+    platform
+    userId
+    nickname
+    avatar
+    version
+    updatedAt
+  }
+}

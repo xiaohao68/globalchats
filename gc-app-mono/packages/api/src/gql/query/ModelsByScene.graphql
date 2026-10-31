@@ -1,0 +1,10 @@
+query ModelsByScene($scene: LlmScene!) {
+  modelsByScene(scene: $scene) {
+    id
+    displayName
+    name
+    region
+    provider
+    isActive
+  }
+}

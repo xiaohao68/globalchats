@@ -1,0 +1,7 @@
+query GetUserConfig {
+  getUserConfig {
+    config
+    version
+    updatedAt
+  }
+}

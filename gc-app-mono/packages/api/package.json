@@ -1,0 +1,31 @@
+{
+  "name": "@gc/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./gen/graphql": "./src/gen/graphql.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@gc/adapter": "workspace:*",
+    "@gc/i18n": "workspace:*",
+    "@gc/model": "workspace:*",
+    "@gc/typescript-config": "workspace:*",
+    "@gc/utils": "workspace:*",
+    "@tauri-apps/plugin-http": "^2.5.4",
+    "@types/debug": "^4.1.12"
+  },
+  "peerDependencies": {
+    "axios": "^1.7.9",
+    "axios-debug-log": "^1.0.0",
+    "debug": "^4.4.0",
+    "graphql": "^16.12.0",
+    "lodash-es": "^4.17.21",
+    "typescript": "^5.9.3"
+  }
+}

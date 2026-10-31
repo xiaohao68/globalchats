@@ -1,0 +1,24 @@
+{
+  "name": "@gc/app-init",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@gc/api": "workspace:*",
+    "@gc/channel": "workspace:*",
+    "@gc/misc": "workspace:*",
+    "@gc/model": "workspace:*",
+    "@gc/store": "workspace:*",
+    "@gc/typescript-config": "workspace:*",
+    "@gc/utils": "workspace:*",
+    "@gc/webview": "workspace:*"
+  },
+  "peerDependencies": {
+    "lodash-es": "^4.17.21",
+    "typescript": "^5.9.3"
+  }
+}
+

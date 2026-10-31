@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Chats - 多平台聚合聊天系统</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', Helvetica, sans-serif; background: #EFEAE2; height: 100vh; overflow: hidden; }
+
+/* ===== 登录页 ===== */
+.login-page { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #0088CC 0%, #25D366 100%); }
+.login-box { background: white; border-radius: 16px; padding: 48px 40px; width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.login-box h1 { font-size: 24px; color: #1A1A1A; margin-bottom: 4px; }
+.login-box p { font-size: 14px; color: #888; margin-bottom: 28px; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+.form-group input { width: 100%; height: 44px; border: 1.5px solid #E0DDD6; border-radius: 10px; padding: 0 14px; font-size: 14px; outline: none; transition: border 0.2s; }
+.form-group input:focus { border-color: #0088CC; }
+.login-btn { width: 100%; height: 46px; border: none; border-radius: 10px; background: #0088CC; color: white; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
+.login-btn:hover { background: #0077B5; }
+.login-hint { text-align: center; margin-top: 16px; font-size: 12px; color: #AAA; }
+
+/* ===== 主界面 ===== */
+.app { display: none; height: 100vh; }
+.app.visible { display: flex; }
+.login-page.hidden { display: none; }
+
+/* 顶部标题栏 */
+.titlebar { height: 36px; background: #2C2C2A; display: flex; align-items: center; padding: 0 16px; -webkit-app-region: drag; position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+.titlebar span { color: #AAA; font-size: 12px; }
+.titlebar .controls { margin-left: auto; display: flex; gap: 12px; -webkit-app-region: no-drag; }
+.titlebar .controls div { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+
+/* 左侧平台栏 */
+.platform-sidebar { width: 72px; background: #FFFFFF; border-right: 1px solid #E0DDD6; display: flex; flex-direction: column; align-items: center; padding-top: 48px; gap: 8px; flex-shrink: 0; }
+.platform-icon { position: relative; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; background: #F0F0F0; }
+.platform-icon:hover { background: #E0E0E0; transform: scale(1.05); }
+.platform-icon.active { background: #0088CC; box-shadow: 0 2px 8px rgba(0,136,204,0.3); }
+.platform-icon.active svg { fill: white !important; }
+.platform-icon.active .icon-text { color: white; }
+.badge { position: absolute; top: -4px; right: -4px; background: #FF3B30; color: white; font-size: 10px; font-weight: 600; border-radius: 10px; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid #FFFFFF; }
+.icon-text { font-size: 10px; color: #888; position: absolute; bottom: -1px; font-weight: 500; }
+.spacer { flex: 1; }
+.aggregate-btn { position: relative; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #E1F5EE; transition: all 0.2s; border: 1px solid #9FE1CB; }
+.aggregate-btn:hover { background: #C5EAD8; }
+.aggregate-btn.active { background: #25D366; border-color: #25D366; }
+.aggregate-btn.active svg { fill: white !important; }
+
+/* 中间列表 */
+.list-panel { width: 320px; background: #FFFFFF; border-right: 1px solid #E0DDD6; display: flex; flex-direction: column; flex-shrink: 0; }
+.panel-header { height: 52px; display: flex; align-items: center; padding: 0 16px; font-weight: 500; font-size: 15px; gap: 8px; color: white; flex-shrink: 0; }
+.panel-header .subtitle { font-size: 12px; opacity: 0.85; margin-left: auto; }
+.panel-header .dot { width: 8px; height: 8px; border-radius: 50%; background: #25D366; }
+.search-bar { padding: 10px 14px; background: #F7F6F3; flex-shrink: 0; }
+.search-bar input { width: 100%; height: 34px; border: 1px solid #E0DDD6; border-radius: 8px; background: white; padding: 0 12px 0 36px; font-size: 13px; outline: none; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'); background-repeat: no-repeat; background-position: 12px center; }
+.list-content { flex: 1; overflow-y: auto; }
+.list-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; transition: background 0.15s; border-left: 3px solid transparent; }
+.list-item:hover { background: #F7F6F3; }
+.list-item.selected { background: #E1F0FA; border-left-color: #0088CC; }
+.list-item.aggregate-selected { background: #E1F5EE; border-left-color: #25D366; }
+.avatar-wrapper { position: relative; flex-shrink: 0; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 14px; }
+.platform-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.online-dot { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 50%; background: #25D366; border: 2px solid #FFFFFF; }
+.item-info { flex: 1; min-width: 0; }
+.item-top { display: flex; justify-content: space-between; align-items: center; }
+.item-name { font-weight: 600; color: #1A1A1A; font-size: 14px; }
+.item-name.read { font-weight: 500; }
+.item-time { font-size: 11px; color: #999; flex-shrink: 0; }
+.item-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 3px; }
+.item-preview { color: #666; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.item-preview.read { color: #888; }
+.unread-badge { background: #FF3B30; color: white; font-size: 10px; border-radius: 10px; padding: 2px 6px; min-width: 18px; text-align: center; font-weight: 600; flex-shrink: 0; margin-left: 8px; }
+.time-group { padding: 10px 14px 4px; font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #FAFAFA; }
+
+/* 右侧主区域 */
+.main-panel { flex: 1; display: flex; flex-direction: column; background: #FFFFFF; }
+.main-header { height: 52px; border-bottom: 1px solid #E0DDD6; display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; }
+.main-header .url { font-weight: 600; font-size: 14px; color: #1A1A1A; }
+.main-header .tag { font-size: 11px; color: #999; padding: 2px 8px; background: #F7F6F3; border-radius: 4px; }
+.main-header .status { margin-left: auto; font-size: 12px; color: #25D366; display: flex; align-items: center; gap: 4px; }
+.main-header .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #25D366; }
+.main-header .user-info { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.main-header .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #E1F0FA; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #0088CC; }
+.main-header .user-name { font-size: 13px; color: #555; }
+.main-header .logout-btn { font-size: 12px; color: #FF3B30; cursor: pointer; margin-left: 8px; padding: 4px 8px; border-radius: 4px; }
+.main-header .logout-btn:hover { background: #FFEBEB; }
+
+/* WebView 占位 */
+.webview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #EFEAE2; position: relative; }
+.webview-placeholder { text-align: center; color: #999; }
+.webview-placeholder .logo { width: 80px; height: 80px; border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.webview-placeholder .title { font-size: 18px; color: #444; margin: 0 0 8px; font-weight: 600; }
+.webview-placeholder .subtitle { font-size: 13px; color: #AAA; margin: 0; line-height: 1.6; }
+.webview-border { position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; border: 2px dashed #D3D1C7; border-radius: 12px; pointer-events: none; }
+
+/* 聊天详情 */
+.chat-area { flex: 1; background: #EFEAE2; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.msg-in { align-self: flex-start; max-width: 65%; background: white; border-radius: 12px 12px 12px 2px; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.msg-out { align-self: flex-end; max-width: 65%; background: #DCF8C6; border-radius: 12px 12px 2px 12px; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.msg-text { margin: 0; font-size: 13px; color: #333; line-height: 1.5; }
+.msg-time { margin: 4px 0 0; font-size: 10px; text-align: right; }
+.msg-in .msg-time { color: #999; }
+.msg-out .msg-time { color: #7BBF6A; }
+.chat-input-bar { padding: 12px 16px; border-top: 1px solid #E0DDD6; display: flex; gap: 10px; align-items: center; flex-shrink: 0; background: white; }
+.chat-input { flex: 1; height: 40px; border: 1.5px solid #E0DDD6; border-radius: 20px; padding: 0 16px; font-size: 13px; outline: none; background: #F7F6F3; transition: border 0.2s; }
+.chat-input:focus { border-color: #0088CC; background: white; }
+.send-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #25D366; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+.send-btn:hover { transform: scale(1.08); }
+.send-btn:active { transform: scale(0.95); }
+
+/* 空状态 */
+.empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: #CCC; font-size: 15px; }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D3D1C7; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B4B2A9; }
+
+/* 动画 */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease; }
+</style>
+</head>
+<body>
+
+<!-- ===== 登录页 ===== -->
+<div class="login-page" id="loginPage">
+  <div class="login-box fade-in">
+    <h1>Global Chats</h1>
+    <p>多平台聚合聊天系统 - 业务员登录</p>
+    <div class="form-group">
+      <label>用户名</label>
+      <input type="text" id="loginUsername" value="zhangsan" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <input type="password" id="loginPassword" value="123456" placeholder="请输入密码">
+    </div>
+    <button class="login-btn" onclick="handleLogin()">登 录</button>
+    <p class="login-hint">测试账号: zhangsan / 123456 (业务员) &nbsp;|&nbsp; admin / 123456 (管理员)</p>
+  </div>
+</div>
+
+<!-- ===== 主界面 ===== -->
+<div class="app" id="app">
+  <!-- 顶部标题栏 -->
+  <div class="titlebar">
+    <span>Global Chats - 多平台聚合聊天系统</span>
+    <div class="controls">
+      <div style="background:#FFBD44;"></div>
+      <div style="background:#FF605C;"></div>
+    </div>
+  </div>
+
+  <!-- 左侧平台图标栏 -->
+  <div class="platform-sidebar" id="platformSidebar">
+    <!-- Telegram -->
+    <div class="platform-icon active" onclick="switchPlatform('telegram')" id="icon-telegram" title="Telegram">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path fill="white" d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+      <div class="badge" id="badge-telegram">3</div>
+    </div>
+    <!-- TikTok -->
+    <div class="platform-icon" onclick="switchPlatform('tiktok')" id="icon-tiktok" title="TikTok">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#69C9D0" d="M16.6 5.82c-.34-.43-.54-.97-.54-1.55V4h-3.1v12.4c0 1.07-.87 1.94-1.94 1.94s-1.94-.87-1.94-1.94c0-1.07.87-1.94 1.94-1.94.21 0 .41.03.6.09V11.5c-.2-.03-.4-.05-.6-.05-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5v-5.7c1.04.75 2.31 1.2 3.7 1.2V8.5c-.79 0-1.53-.23-2.12-.68z"/><path fill="#EE1D46" d="M16.06 4.27c-.34-.43-.54-.97-.54-1.55V2.45h-3.1v12.4c0 1.07-.87 1.94-1.94 1.94s-1.94-.87-1.94-1.94c0-1.07.87-1.94 1.94-1.94.21 0 .41.03.6.09V9.95c-.2-.03-.4-.05-.6-.05-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5V7.2c1.04.75 2.31 1.2 3.7 1.2V6.95c-.79 0-1.53-.23-2.12-.68z"/></svg>
+    </div>
+    <!-- LinkedIn -->
+    <div class="platform-icon" onclick="switchPlatform('linkedin')" id="icon-linkedin" title="LinkedIn">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#0A66C2" d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43c-1.14 0-2.07-.93-2.07-2.07s.93-2.07 2.07-2.07 2.07.93 2.07 2.07-.93 2.07-2.07 2.07zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+    </div>
+    <!-- Messenger -->
+    <div class="platform-icon" onclick="switchPlatform('messenger')" id="icon-messenger" title="Messenger">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#006AFF" d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.4 3.7 7.1V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2zm1 12.4l-2.5-2.7L5.7 14l4.7-5 2.6 2.7 4.7-2.7-4.7 5z"/></svg>
+    </div>
+    <!-- Facebook -->
+    <div class="platform-icon" onclick="switchPlatform('facebook')" id="icon-facebook" title="Facebook">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+    </div>
+    <!-- Teams -->
+    <div class="platform-icon" onclick="switchPlatform('teams')" id="icon-teams" title="Teams">
+      <div class="icon-text" style="background:#6264A7;color:white;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;position:static;">T</div>
+    </div>
+    <div class="spacer"></div>
+    <!-- 聚合按钮 -->
+    <div class="aggregate-btn" onclick="switchToAggregate()" id="aggregateBtn" title="聚合消息">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#0F6E56" d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+      <div class="badge" id="badge-aggregate">4</div>
+    </div>
+    <div style="height:16px;"></div>
+  </div>
+
+  <!-- 中间列表面板 -->
+  <div class="list-panel" id="listPanel">
+    <!-- 平台模式标题 -->
+    <div class="panel-header" id="panelHeader" style="background:#0088CC;">
+      <span id="panelTitle">Telegram</span>
+      <span class="subtitle" id="panelSubtitle">监听中</span>
+      <div class="dot" id="panelDot"></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="搜索客户..." oninput="handleSearch(this.value)">
+    </div>
+    <div class="list-content" id="listContent">
+      <!-- 动态生成 -->
+    </div>
+  </div>
+
+  <!-- 右侧主面板 -->
+  <div class="main-panel" id="mainPanel">
+    <div class="main-header" id="mainHeader">
+      <span class="url" id="mainTitle">web.telegram.org</span>
+      <span class="tag" id="mainTag">内嵌网页</span>
+      <span class="status" id="mainStatus">已登录</span>
+      <div class="user-info" id="userInfo" style="display:none;">
+        <div class="user-avatar" id="userAvatar">张</div>
+        <span class="user-name" id="userName">张三</span>
+        <span class="logout-btn" onclick="handleLogout()">退出</span>
+      </div>
+    </div>
+    <div class="webview-area" id="webviewArea">
+      <div class="webview-placeholder fade-in" id="webviewPlaceholder">
+        <div class="logo" id="webviewLogo" style="background:#0088CC;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+        </div>
+        <p class="title" id="webviewTitle">Telegram 网页版</p>
+        <p class="subtitle" id="webviewSubtitle">用户在此区域直接登录和操作 Telegram<br>点击左侧平台图标切换不同平台</p>
+      </div>
+      <div class="webview-border"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 平台配置 =====
+const platforms = {
+  telegram: { name: 'Telegram', color: '#0088CC', url: 'web.telegram.org', icon: '<path fill="white" d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>' },
+  tiktok: { name: 'TikTok', color: '#69C9D0', url: 'www.tiktok.com/messages', icon: '<path fill="white" d="M16.6 5.82c-.34-.43-.54-.97-.54-1.55V4h-3.1v12.4c0 1.07-.87 1.94-1.94 1.94s-1.94-.87-1.94-1.94c0-1.07.87-1.94 1.94-1.94.21 0 .41.03.6.09V11.5c-.2-.03-.4-.05-.6-.05-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5v-5.7c1.04.75 2.31 1.2 3.7 1.2V8.5c-.79 0-1.53-.23-2.12-.68z"/>' },
+  linkedin: { name: 'LinkedIn', color: '#0A66C2', url: 'www.linkedin.com/messaging', icon: '<path fill="white" d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29z"/>' },
+  messenger: { name: 'Messenger', color: '#006AFF', url: 'www.messenger.com', icon: '<path fill="white" d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.4 3.7 7.1V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2z"/>' },
+  facebook: { name: 'Facebook', color: '#1877F2', url: 'www.facebook.com/messages', icon: '<path fill="white" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/>' },
+  teams: { name: 'Teams', color: '#6264A7', url: 'teams.microsoft.com', icon: '<text x="12" y="17" text-anchor="middle" fill="white" font-size="14" font-weight="600">T</text>' },
+};
+
+// ===== 模拟数据 =====
+const mockData = {
+  telegram: [
+    { id: 1, name: 'John Davis', preview: 'Hi, interested in your products', time: '12:30', unread: 2, online: true, color: '#DDF0FF', textColor: '#0088CC', initials: 'JD' },
+    { id: 2, name: 'Sarah Miller', preview: 'Can you send the catalog?', time: '11:45', unread: 0, online: false, color: '#FFF4E6', textColor: '#BA7517', initials: 'SM' },
+    { id: 3, name: 'Ahmed Benali', preview: 'Price for bulk order?', time: '10:20', unread: 1, online: true, color: '#FBEAF0', textColor: '#D4537E', initials: 'AB' },
+    { id: 4, name: 'Li Wei', preview: 'Thanks for the quote', time: '昨天', unread: 0, online: false, color: '#E6F1FB', textColor: '#185FA5', initials: 'LW' },
+    { id: 5, name: 'Maria Koch', preview: 'When will you ship?', time: '昨天', unread: 0, online: false, color: '#FAEEDA', textColor: '#854F0B', initials: 'MK' },
+  ],
+  facebook: [
+    { id: 6, name: 'Emma Wilson', preview: 'Do you ship to Germany?', time: '12:15', unread: 1, online: true, color: '#E6F1FB', textColor: '#185FA5', initials: 'EW' },
+    { id: 7, name: '美国贸易群', preview: '大家好，新订单已收到', time: '10:00', unread: 0, online: false, color: '#E1F5EE', textColor: '#0F6E56', initials: '群' },
+    { id: 8, name: 'Carlos Silva', preview: 'What is your MOQ?', time: '09:30', unread: 0, online: false, color: '#FAECE7', textColor: '#D85A30', initials: 'CS' },
+  ],
+  linkedin: [],
+  messenger: [],
+  tiktok: [],
+  teams: [],
+};
+
+const aggregateData = [
+  { platform: 'telegram', name: 'John Davis', preview: 'Hi, interested in your products', time: '12:30', unread: true },
+  { platform: 'facebook', name: 'Emma Wilson', preview: 'Do you ship to Germany?', time: '12:15', unread: true },
+  { platform: 'telegram', name: 'Ahmed Benali', preview: 'Price for bulk order?', time: '10:20', unread: true },
+  { platform: 'teams', name: 'David Chen', preview: 'Meeting notes attached', time: '09:50', unread: true },
+  { platform: 'linkedin', name: 'Robert Lee', preview: 'Saw your post about the new product', time: '昨天', unread: false },
+  { platform: 'messenger', name: 'Sophia Brown', preview: 'Can we schedule a call?', time: '昨天', unread: false },
+];
+
+const chatMessages = [
+  { type: 'in', text: 'Hi, I saw your products online. Are they available for export?', time: '10:15' },
+  { type: 'out', text: 'Yes! We ship worldwide. What products are you interested in?', time: '10:18' },
+  { type: 'in', text: 'Hi, interested in your products. Can you send me the catalog?', time: '12:30' },
+];
+
+let currentPlatform = 'telegram';
+let isAggregateMode = false;
+let currentUser = null;
+
+// ===== 登录 =====
+function handleLogin() {
+  const username = document.getElementById('loginUsername').value;
+  const password = document.getElementById('loginPassword').value;
+  if (username && password) {
+    currentUser = { name: username === 'admin' ? '管理员' : '张三', role: username === 'admin' ? 'admin' : 'member' };
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userAvatar').textContent = currentUser.name[0];
+    document.getElementById('userInfo').style.display = 'flex';
+    document.getElementById('mainStatus').style.display = 'none';
+    renderList();
+  }
+}
+
+function handleLogout() {
+  document.getElementById('loginPage').classList.remove('hidden');
+  document.getElementById('app').classList.remove('visible');
+  currentUser = null;
+}
+
+// ===== 切换平台 =====
+function switchPlatform(platform) {
+  if (isAggregateMode) {
+    document.getElementById('aggregateBtn').classList.remove('active');
+    isAggregateMode = false;
+  }
+  currentPlatform = platform;
+
+  // 更新图标高亮
+  document.querySelectorAll('.platform-icon').forEach(el => el.classList.remove('active'));
+  document.getElementById('icon-' + platform)?.classList.add('active');
+
+  const p = platforms[platform];
+  // 更新标题
+  document.getElementById('panelHeader').style.background = p.color;
+  document.getElementById('panelTitle').textContent = p.name;
+  document.getElementById('panelSubtitle').textContent = '监听中';
+  document.getElementById('panelDot').style.display = 'block';
+
+  // 更新主面板
+  document.getElementById('mainTitle').textContent = p.url;
+  document.getElementById('mainTag').style.display = 'inline';
+  document.getElementById('mainStatus').style.display = 'flex';
+  document.getElementById('webviewArea').style.display = 'flex';
+  document.getElementById('webviewLogo').style.background = p.color;
+  document.getElementById('webviewLogo').innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="white">' + p.icon + '</svg>';
+  document.getElementById('webviewTitle').textContent = p.name + ' 网页版';
+  document.getElementById('webviewSubtitle').innerHTML = '用户在此区域直接登录和操作 ' + p.name + '<br>点击左侧平台图标切换不同平台';
+
+  renderList();
+}
+
+function switchToAggregate() {
+  isAggregateMode = true;
+  document.querySelectorAll('.platform-icon').forEach(el => el.classList.remove('active'));
+  document.getElementById('aggregateBtn').classList.add('active');
+
+  document.getElementById('panelHeader').style.background = '#25D366';
+  document.getElementById('panelTitle').textContent = '聚合消息';
+  document.getElementById('panelSubtitle').textContent = '';
+  document.getElementById('panelDot').style.display = 'none';
+
+  document.getElementById('searchInput').placeholder = '搜索所有平台消息...';
+
+  document.getElementById('mainTitle').textContent = '消息详情';
+  document.getElementById('mainTag').style.display = 'none';
+  document.getElementById('mainStatus').style.display = 'none';
+
+  renderAggregateList();
+}
+
+// ===== 渲染列表 =====
+function renderList(filter = '') {
+  const content = document.getElementById('listContent');
+  const items = (mockData[currentPlatform] || []).filter(item =>
+    !filter || item.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  if (items.length === 0) {
+    content.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#CCC;"><p style="font-size:15px;margin-bottom:8px;">暂无消息</p><p style="font-size:12px;">等待新消息到达...</p></div>';
+    return;
+  }
+
+  content.innerHTML = items.map((item, idx) => `
+    <div class="list-item ${idx === 0 ? 'selected' : ''}" onclick="selectCustomer(${item.id})">
+      <div class="avatar-wrapper">
+        <div class="avatar" style="background:${item.color};color:${item.textColor};">${item.initials}</div>
+        ${item.online ? '<div class="online-dot"></div>' : ''}
+      </div>
+      <div class="item-info">
+        <div class="item-top">
+          <span class="item-name ${item.unread ? '' : 'read'}">${item.name}</span>
+          <span class="item-time">${item.time}</span>
+        </div>
+        <div class="item-bottom">
+          <span class="item-preview ${item.unread ? '' : 'read'}">${item.preview}</span>
+          ${item.unread ? `<span class="unread-badge">${item.unread}</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAggregateList(filter = '') {
+  const content = document.getElementById('listContent');
+  const items = aggregateData.filter(item =>
+    !filter || item.name.toLowerCase().includes(filter.toLowerCase()) || item.preview.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  let html = '<div class="time-group">今天</div>';
+  let yesterdayStarted = false;
+
+  items.forEach((item, idx) => {
+    if (item.time === '昨天' && !yesterdayStarted) {
+      html += '<div class="time-group">昨天</div>';
+      yesterdayStarted = true;
+    }
+    const p = platforms[item.platform];
+    html += `
+      <div class="list-item ${idx === 0 ? 'aggregate-selected' : ''}" onclick="showChatDetail('${item.platform}', '${item.name}', '${item.preview}')">
+        <div class="platform-avatar" style="background:${p.color};">
+          <svg width="18" height="18" viewBox="0 0 24 24">${p.icon}</svg>
+        </div>
+        <div class="item-info">
+          <div class="item-top">
+            <span class="item-name ${item.unread ? '' : 'read'}">${item.name}</span>
+            <span class="item-time">${item.time}</span>
+          </div>
+          <div class="item-bottom">
+            <span class="item-preview ${item.unread ? '' : 'read'}">${item.preview}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  content.innerHTML = html;
+}
+
+// ===== 点击客户显示聊天详情 =====
+function selectCustomer(id) {
+  // 高亮选中项
+  document.querySelectorAll('.list-item').forEach(el => el.classList.remove('selected', 'aggregate-selected'));
+  event.currentTarget.classList.add(isAggregateMode ? 'aggregate-selected' : 'selected');
+
+  // 切换到聊天详情
+  showChatDetailPanel();
+}
+
+function showChatDetail(platform, name, preview) {
+  document.querySelectorAll('.list-item').forEach(el => el.classList.remove('aggregate-selected', 'selected'));
+  event.currentTarget.classList.add('aggregate-selected');
+
+  const p = platforms[platform];
+  document.getElementById('mainTitle').innerHTML = `<div style="display:flex;align-items:center;gap:8px;"><div class="platform-avatar" style="width:28px;height:28px;background:${p.color};"><svg width="14" height="14" viewBox="0 0 24 24">${p.icon}</svg></div><span>${name}</span></div>`;
+  document.getElementById('mainTag').style.display = 'none';
+  document.getElementById('mainStatus').style.display = 'none';
+
+  showChatDetailPanel(name, platform);
+}
+
+function showChatDetailPanel(customerName = 'John Davis', platform = 'telegram') {
+  const mainPanel = document.getElementById('mainPanel');
+  const p = platforms[platform];
+
+  // 移除旧的聊天区域
+  const oldChat = mainPanel.querySelector('.chat-area');
+  const oldInput = mainPanel.querySelector('.chat-input-bar');
+  const oldEmpty = mainPanel.querySelector('.empty-state');
+  if (oldChat) oldChat.remove();
+  if (oldInput) oldInput.remove();
+  if (oldEmpty) oldEmpty.remove();
+  document.getElementById('webviewArea').style.display = 'none';
+
+  // 创建聊天区域
+  const chatArea = document.createElement('div');
+  chatArea.className = 'chat-area fade-in';
+  chatArea.innerHTML = chatMessages.map(msg => `
+    <div class="${msg.type === 'in' ? 'msg-in' : 'msg-out'}">
+      <p class="msg-text">${msg.text}</p>
+      <p class="msg-time">${msg.time}${msg.type === 'out' ? ' ✓' : ''}</p>
+    </div>
+  `).join('');
+
+  const inputBar = document.createElement('div');
+  inputBar.className = 'chat-input-bar';
+  inputBar.innerHTML = `
+    <input type="text" class="chat-input" placeholder="输入回复消息..." onkeydown="if(event.key==='Enter')sendMessage()">
+    <button class="send-btn" onclick="sendMessage()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+    </button>
+  `;
+
+  mainPanel.appendChild(chatArea);
+  mainPanel.appendChild(inputBar);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function sendMessage() {
+  const input = document.querySelector('.chat-input');
+  if (!input || !input.value.trim()) return;
+
+  const chatArea = document.querySelector('.chat-area');
+  const msg = document.createElement('div');
+  msg.className = 'msg-out fade-in';
+  msg.innerHTML = `<p class="msg-text">${input.value}</p><p class="msg-time">刚刚 ✓</p>`;
+  chatArea.appendChild(msg);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  input.value = '';
+}
+
+// ===== 搜索 =====
+function handleSearch(value) {
+  if (isAggregateMode) {
+    renderAggregateList(value);
+  } else {
+    renderList(value);
+  }
+}
+
+// ===== 显示 WebView 占位（切回平台模式时）=====
+function showWebView() {
+  document.getElementById('webviewArea').style.display = 'flex';
+  const chatArea = document.querySelector('.chat-area');
+  const inputBar = document.querySelector('.chat-input-bar');
+  if (chatArea) chatArea.remove();
+  if (inputBar) inputBar.remove();
+}
+
+// ===== 初始化 =====
+renderList();
+</script>
+</body>
+</html>

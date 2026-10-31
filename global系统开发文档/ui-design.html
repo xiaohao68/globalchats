@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Chats UI 设计方案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Helvetica, sans-serif; background: #F0F2F5; color: #333; padding: 20px; }
+  .section-title { font-size: 16px; font-weight: 600; color: #333; margin: 20px 0 10px; }
+  .section-desc { font-size: 13px; color: #666; margin-bottom: 10px; }
+  .mockup { display: flex; border: 1px solid #D3D1C7; border-radius: 12px; overflow: hidden; height: 560px; background: #EFEAE2; }
+  .mockup.aggregate { height: 460px; margin-top: 16px; }
+  
+  /* Left sidebar - platform icons */
+  .platform-sidebar { width: 72px; background: #FFFFFF; border-right: 1px solid #E0DDD6; display: flex; flex-direction: column; align-items: center; padding-top: 14px; gap: 8px; }
+  .platform-icon { position: relative; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
+  .platform-icon:hover { background: #E8E8E8; }
+  .platform-icon.active { background: #0088CC; }
+  .platform-icon.active svg { fill: white; }
+  .platform-icon.inactive { background: #F0F0F0; }
+  .platform-icon.aggregate { background: #25D366; margin-top: auto; }
+  .badge { position: absolute; top: -4px; right: -4px; background: #FF3B30; color: white; font-size: 10px; font-weight: 600; border-radius: 10px; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid #FFFFFF; }
+  .spacer { flex: 1; }
+  
+  /* Middle panel - chat list */
+  .chat-list-panel { width: 320px; background: #FFFFFF; border-right: 1px solid #E0DDD6; display: flex; flex-direction: column; }
+  .platform-header { height: 52px; color: white; display: flex; align-items: center; padding: 0 16px; font-weight: 500; font-size: 15px; gap: 8px; }
+  .platform-header .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #25D366; border: 1px solid rgba(255,255,255,0.3); }
+  .platform-header .status-text { font-size: 12px; opacity: 0.85; margin-left: auto; }
+  .search-bar { padding: 10px 14px; background: #F7F6F3; }
+  .search-input { width: 100%; height: 34px; border: 1px solid #E0DDD6; border-radius: 8px; background: white; padding: 0 12px 0 36px; font-size: 13px; outline: none; }
+  .chat-list { flex: 1; overflow-y: auto; }
+  .chat-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; transition: background 0.15s; }
+  .chat-item:hover { background: #F7F6F3; }
+  .chat-item.selected { background: #E1F0FA; border-left: 3px solid #0088CC; }
+  .chat-item.aggregate-selected { background: #E1F5EE; border-left: 3px solid #25D366; }
+  .avatar-wrapper { position: relative; flex-shrink: 0; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 14px; }
+  .platform-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .online-dot { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 50%; background: #25D366; border: 2px solid #FFFFFF; }
+  .chat-info { flex: 1; min-width: 0; }
+  .chat-top-row { display: flex; justify-content: space-between; align-items: center; }
+  .chat-name { font-weight: 600; color: #1A1A1A; font-size: 14px; }
+  .chat-name.read { font-weight: 500; }
+  .chat-time { font-size: 11px; color: #999; }
+  .chat-bottom-row { display: flex; justify-content: space-between; align-items: center; margin-top: 3px; }
+  .chat-preview { color: #666; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chat-preview.read { color: #888; }
+  .unread-badge { background: #FF3B30; color: white; font-size: 10px; border-radius: 10px; padding: 2px 6px; min-width: 18px; text-align: center; font-weight: 600; }
+  
+  /* Time group header */
+  .time-group { padding: 8px 14px 4px; font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  /* Right panel - webview or chat */
+  .right-panel { flex: 1; background: #FFFFFF; display: flex; flex-direction: column; }
+  .webview-header { height: 52px; border-bottom: 1px solid #E0DDD6; display: flex; align-items: center; padding: 0 16px; gap: 8px; }
+  .webview-header .url { font-weight: 600; font-size: 14px; color: #1A1A1A; }
+  .webview-header .tag { font-size: 12px; color: #999; padding: 2px 8px; background: #F7F6F3; border-radius: 4px; }
+  .webview-header .login-status { margin-left: auto; font-size: 12px; color: #25D366; display: flex; align-items: center; gap: 4px; }
+  .webview-header .login-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #25D366; }
+  .webview-placeholder { flex: 1; display: flex; align-items: center; justify-content: center; background: #EFEAE2; position: relative; }
+  .webview-placeholder-inner { text-align: center; color: #999; }
+  .webview-placeholder .logo { width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; }
+  .webview-placeholder .title { font-size: 14px; color: #555; margin: 0 0 6px; font-weight: 500; }
+  .webview-placeholder .subtitle { font-size: 12px; color: #AAA; margin: 0; }
+  .webview-placeholder .border-area { position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 2px dashed #D3D1C7; border-radius: 8px; pointer-events: none; }
+  
+  /* Chat view */
+  .chat-header { height: 52px; border-bottom: 1px solid #E0DDD6; display: flex; align-items: center; padding: 0 16px; gap: 10px; }
+  .chat-messages { flex: 1; background: #EFEAE2; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .message-in { align-self: flex-start; max-width: 70%; background: white; border-radius: 8px 8px 8px 0; padding: 8px 12px; }
+  .message-out { align-self: flex-end; max-width: 70%; background: #DCF8C6; border-radius: 8px 8px 0 8px; padding: 8px 12px; }
+  .message-text { margin: 0; font-size: 13px; color: #333; }
+  .message-time { margin: 4px 0 0; font-size: 10px; text-align: right; }
+  .message-in .message-time { color: #999; }
+  .message-out .message-time { color: #7BBF6A; }
+  .chat-input-bar { padding: 10px 16px; border-top: 1px solid #E0DDD6; display: flex; gap: 8px; align-items: center; }
+  .chat-input { flex: 1; height: 36px; border: 1px solid #E0DDD6; border-radius: 18px; padding: 0 16px; font-size: 13px; outline: none; background: #F7F6F3; }
+  .send-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: #25D366; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+
+<h1 style="font-size: 20px; margin-bottom: 6px;">Global Chats UI 设计方案</h1>
+<p style="font-size: 13px; color: #666; margin-bottom: 20px;">改进点：平台图标用真实 Logo + 红色未读角标 / 暖色背景 / 加宽布局 / 聚合页时间分组</p>
+
+<h2 class="section-title">视图一：平台视图</h2>
+<p class="section-desc">点击左侧平台图标 → 中间显示该平台的客户列表 → 右侧内嵌平台真实网页</p>
+
+<div class="mockup">
+  <!-- 左侧平台图标栏 -->
+  <div class="platform-sidebar">
+    <!-- Telegram (active, 3 unread) -->
+    <div class="platform-icon active">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+      <div class="badge">3</div>
+    </div>
+    <!-- TikTok (1 unread) -->
+    <div class="platform-icon inactive">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#69C9D0" d="M16.6 5.82c-.34-.43-.54-.97-.54-1.55V4h-3.1v12.4c0 1.07-.87 1.94-1.94 1.94s-1.94-.87-1.94-1.94c0-1.07.87-1.94 1.94-1.94.21 0 .41.03.6.09V11.5c-.2-.03-.4-.05-.6-.05-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5v-5.7c1.04.75 2.31 1.2 3.7 1.2V8.5c-.79 0-1.53-.23-2.12-.68z"/><path fill="#EE1D46" d="M16.06 4.27c-.34-.43-.54-.97-.54-1.55V2.45h-3.1v12.4c0 1.07-.87 1.94-1.94 1.94s-1.94-.87-1.94-1.94c0-1.07.87-1.94 1.94-1.94.21 0 .41.03.6.09V9.95c-.2-.03-.4-.05-.6-.05-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5V7.2c1.04.75 2.31 1.2 3.7 1.2V6.95c-.79 0-1.53-.23-2.12-.68z"/></svg>
+      <div class="badge">1</div>
+    </div>
+    <!-- LinkedIn -->
+    <div class="platform-icon inactive">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#0A66C2" d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43c-1.14 0-2.07-.93-2.07-2.07s.93-2.07 2.07-2.07 2.07.93 2.07 2.07-.93 2.07-2.07 2.07zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+    </div>
+    <!-- Messenger -->
+    <div class="platform-icon inactive">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#006AFF" d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.4 3.7 7.1V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2zm1 12.4l-2.5-2.7L5.7 14l4.7-5 2.6 2.7 4.7-2.7-4.7 5z"/></svg>
+    </div>
+    <!-- Facebook -->
+    <div class="platform-icon inactive">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+    </div>
+    <!-- Teams -->
+    <div class="platform-icon inactive">
+      <div style="background:#6264A7;color:white;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;">T</div>
+    </div>
+    <div class="spacer"></div>
+    <!-- Aggregate (4 unread) -->
+    <div class="platform-icon aggregate">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+      <div class="badge">4</div>
+    </div>
+    <div style="height:14px;"></div>
+  </div>
+
+  <!-- 中间客户列表 -->
+  <div class="chat-list-panel">
+    <div class="platform-header" style="background:#0088CC;">
+      Telegram
+      <span class="status-text">监听中</span>
+      <div class="status-dot"></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="搜索客户..." readonly>
+    </div>
+    <div class="chat-list">
+      <div class="chat-item selected">
+        <div class="avatar-wrapper">
+          <div class="avatar" style="background:#DDF0FF;color:#0088CC;">JD</div>
+          <div class="online-dot"></div>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name">John Davis</span><span class="chat-time">12:30</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview">Hi, interested in your products</span><span class="unread-badge">2</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="avatar-wrapper"><div class="avatar" style="background:#FFF4E6;color:#BA7517;">SM</div></div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name read">Sarah Miller</span><span class="chat-time">11:45</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview read">Can you send the catalog?</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="avatar-wrapper">
+          <div class="avatar" style="background:#FBEAF0;color:#D4537E;">AB</div>
+          <div class="online-dot"></div>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name">Ahmed Benali</span><span class="chat-time">10:20</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview">Price for bulk order?</span><span class="unread-badge">1</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="avatar-wrapper"><div class="avatar" style="background:#E6F1FB;color:#185FA5;">LW</div></div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name read">Li Wei</span><span class="chat-time">昨天</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview read">Thanks for the quote</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="avatar-wrapper"><div class="avatar" style="background:#FAEEDA;color:#854F0B;">MK</div></div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name read">Maria Koch</span><span class="chat-time">昨天</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview read">When will you ship?</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧 WebView 区域 -->
+  <div class="right-panel">
+    <div class="webview-header">
+      <span class="url">web.telegram.org</span>
+      <span class="tag">内嵌网页</span>
+      <span class="login-status">已登录</span>
+    </div>
+    <div class="webview-placeholder">
+      <div class="webview-placeholder-inner">
+        <div class="logo" style="background:#0088CC;">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+        </div>
+        <p class="title">Telegram 网页版</p>
+        <p class="subtitle">用户在此区域直接登录和操作 Telegram</p>
+      </div>
+      <div class="border-area"></div>
+    </div>
+  </div>
+</div>
+
+<h2 class="section-title">视图二：聚合视图</h2>
+<p class="section-desc">点击左下角「聚合」按钮 → 右侧切换为聚合消息视图（带时间分组 + 平台标识 + 聊天详情）</p>
+
+<div class="mockup aggregate">
+  <!-- 左侧平台图标栏（聚合高亮） -->
+  <div class="platform-sidebar">
+    <div class="platform-icon inactive">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#0088CC"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+    </div>
+    <div class="platform-icon inactive">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#69C9D0" d="M16.6 5.82c-.34-.43-.54-.97-.54-1.55V4h-3.1v12.4c0 1.07-.87 1.94-1.94 1.94s-1.94-.87-1.94-1.94c0-1.07.87-1.94 1.94-1.94.21 0 .41.03.6.09V11.5c-.2-.03-.4-.05-.6-.05-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5v-5.7c1.04.75 2.31 1.2 3.7 1.2V8.5c-.79 0-1.53-.23-2.12-.68z"/></svg>
+    </div>
+    <div class="platform-icon inactive">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#0A66C2" d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29z"/></svg>
+    </div>
+    <div class="platform-icon inactive">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#006AFF" d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.4 3.7 7.1V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2z"/></svg>
+    </div>
+    <div class="platform-icon inactive">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+    </div>
+    <div class="platform-icon inactive">
+      <div style="background:#6264A7;color:white;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">T</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="platform-icon aggregate" style="background:#25D366;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+    </div>
+    <div style="height:14px;"></div>
+  </div>
+
+  <!-- 聚合消息列表 -->
+  <div class="chat-list-panel">
+    <div class="platform-header" style="background:#25D366;">聚合消息</div>
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="搜索所有平台消息..." readonly>
+    </div>
+    <div class="chat-list">
+      <div class="time-group">今天</div>
+      <div class="chat-item aggregate-selected">
+        <div class="platform-avatar" style="background:#0088CC;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name">John Davis</span><span class="chat-time">12:30</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview">Hi, interested in your products</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="platform-avatar" style="background:#1877F2;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name">Emma Wilson</span><span class="chat-time">12:15</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview">Do you ship to Germany?</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="platform-avatar" style="background:#0088CC;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name">Ahmed Benali</span><span class="chat-time">10:20</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview">Price for bulk order?</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="platform-avatar" style="background:#6264A7;">
+          <span style="color:white;font-weight:600;font-size:14px;">T</span>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name">David Chen</span><span class="chat-time">09:50</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview">Meeting notes attached</span></div>
+        </div>
+      </div>
+      <div class="time-group">昨天</div>
+      <div class="chat-item">
+        <div class="platform-avatar" style="background:#0A66C2;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29z"/></svg>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name read">Robert Lee</span><span class="chat-time">昨天</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview read">Saw your post about the new product</span></div>
+        </div>
+      </div>
+      <div class="chat-item">
+        <div class="platform-avatar" style="background:#006AFF;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.4 3.7 7.1V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2z"/></svg>
+        </div>
+        <div class="chat-info">
+          <div class="chat-top-row"><span class="chat-name read">Sophia Brown</span><span class="chat-time">昨天</span></div>
+          <div class="chat-bottom-row"><span class="chat-preview read">Can we schedule a call?</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧聚合消息详情 -->
+  <div class="right-panel">
+    <div class="chat-header">
+      <div class="platform-avatar" style="background:#0088CC;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+      </div>
+      <div>
+        <p style="margin:0;font-weight:600;font-size:14px;color:#1A1A1A;">John Davis</p>
+        <p style="margin:0;font-size:11px;color:#999;">来自 Telegram · 在线</p>
+      </div>
+    </div>
+    <div class="chat-messages">
+      <div class="message-in">
+        <p class="message-text">Hi, I saw your products online. Are they available for export?</p>
+        <p class="message-time">10:15</p>
+      </div>
+      <div class="message-out">
+        <p class="message-text">Yes! We ship worldwide. What products are you interested in?</p>
+        <p class="message-time">10:18 ✓</p>
+      </div>
+      <div class="message-in">
+        <p class="message-text">Hi, interested in your products. Can you send me the catalog?</p>
+        <p class="message-time">12:30</p>
+      </div>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" class="chat-input" placeholder="输入回复消息..." readonly>
+      <button class="send-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

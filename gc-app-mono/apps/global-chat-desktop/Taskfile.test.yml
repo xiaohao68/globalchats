@@ -1,0 +1,183 @@
+version: '3'
+
+#==============================================================================
+# Test Environment Configuration
+# 测试环境配置 - Debug 模式构建
+#==============================================================================
+
+vars:
+  # CrabNebula 应用标识
+  CN_APPLICATION: chathub/global-chats-test
+  # 环境标识
+  MODE: test
+  # Sentry DSN
+  SENTRY_DSN: https://aae53d1cf7a3812573ee2bbeea1ca71e@o4509418064510976.ingest.us.sentry.io/4509514402168832
+  # Tauri 配置文件
+  CONFIG_FILE: ./src-tauri/tauri.conf.json
+  # 动态变量
+  VERSION:
+    sh: jq -r '.version' {{.CONFIG_FILE}}
+  APP_NAME:
+    sh: jq -r '.productName' {{.CONFIG_FILE}}
+  NOTES:
+    sh: if [ -f "./release-notes/release-notes.md" ]; then cat ./release-notes/release-notes.md; else echo "No release notes available"; fi
+
+env:
+  MODE: "{{.MODE}}"
+  SENTRY_DSN: "{{.SENTRY_DSN}}"
+  VITE_VERSION: "{{.VERSION}}"
+
+tasks:
+  #============================================================================
+  # 开发任务
+  #============================================================================
+  dev:
+    desc: Start frontend dev server
+    cmds:
+      - bun dev
+
+  tauri-dev:
+    desc: Start Tauri development mode
+    cmds:
+      - cargo tauri dev
+
+  dev-all:
+    desc: Start frontend + Tauri in parallel
+    deps: [dev, tauri-dev]
+
+  #============================================================================
+  # 构建任务
+  #============================================================================
+  build-frontend:
+    desc: Build frontend assets (test)
+    cmds:
+      - bun run build:test
+    sources:
+      - src/**/*
+      - package.json
+      - ../../packages/**/*
+    generates:
+      - dist/**/*
+
+  build-macos-x64:
+    desc: Build for macOS x86_64 (debug)
+    cmds:
+      - bun tauri build -t x86_64-apple-darwin -c {{.CONFIG_FILE}} --debug
+
+  build-macos-arm64:
+    desc: Build for macOS aarch64 (debug)
+    cmds:
+      - bun tauri build -t aarch64-apple-darwin -c {{.CONFIG_FILE}} --debug
+
+  build-xwindows-x64:
+    desc: Cross-compile for Windows x86_64 (debug)
+    cmds:
+      - bun tauri build --runner cargo-xwin -t x86_64-pc-windows-msvc -c {{.CONFIG_FILE}} --debug
+
+  build-windows-x64:
+    desc: Build for Windows x86_64 (debug)
+    cmds:
+      - bun tauri build -t x86_64-pc-windows-msvc -c {{.CONFIG_FILE}} --debug
+
+  build-macos:
+    desc: Build for all macOS platforms
+    deps: [build-macos-x64, build-macos-arm64]
+
+  build-all:
+    desc: Build for all platforms
+    cmds:
+      - task: setup-targets
+      - task: build-frontend
+      - task: build-macos
+      - task: build-xwindows-x64
+
+  setup-targets:
+    desc: Setup Rust compilation targets
+    cmds:
+      - rustup target add x86_64-apple-darwin
+      - rustup target add aarch64-apple-darwin
+      - rustup target add x86_64-pc-windows-msvc
+    status:
+      - rustup target list --installed | grep -q x86_64-apple-darwin
+      - rustup target list --installed | grep -q aarch64-apple-darwin
+      - rustup target list --installed | grep -q x86_64-pc-windows-msvc
+
+  #============================================================================
+  # 发布任务
+  #============================================================================
+  draft-and-upload:
+    desc: Create draft release and upload artifacts
+    cmds:
+      - |
+        echo "Creating draft release..."
+        CN_RELEASE_OUTPUT=$(cn release draft {{.CN_APPLICATION}} --framework tauri --notes "{{.NOTES}}")
+        CN_RELEASE_ID=$(echo "$CN_RELEASE_OUTPUT" | grep -o '"id": "[^"]*"' | cut -d '"' -f4)
+        echo "Release ID: $CN_RELEASE_ID"
+
+        echo "Uploading build artifacts..."
+
+        # Windows
+        echo "Uploading Windows build..."
+        cn release upload {{.CN_APPLICATION}} $CN_RELEASE_ID \
+          --public-platform nsis-x86_64 \
+          --update-platform windows-x86_64 \
+          --file "./src-tauri/target/x86_64-pc-windows-msvc/debug/bundle/nsis/{{.APP_NAME}}_{{.VERSION}}_x64-setup.exe"
+
+        # macOS x86_64
+        echo "Uploading macOS x86_64 build..."
+        cn release upload {{.CN_APPLICATION}} $CN_RELEASE_ID \
+          --update-platform darwin-x86_64 \
+          --file "./src-tauri/target/x86_64-apple-darwin/debug/bundle/macos/{{.APP_NAME}}.app.tar.gz"
+        cn release upload {{.CN_APPLICATION}} $CN_RELEASE_ID \
+          --public-platform dmg-x86_64 \
+          --file "./src-tauri/target/x86_64-apple-darwin/debug/bundle/dmg/{{.APP_NAME}}_{{.VERSION}}_x64.dmg"
+
+        # macOS aarch64
+        echo "Uploading macOS aarch64 build..."
+        cn release upload {{.CN_APPLICATION}} $CN_RELEASE_ID \
+          --update-platform darwin-aarch64 \
+          --file "./src-tauri/target/aarch64-apple-darwin/debug/bundle/macos/{{.APP_NAME}}.app.tar.gz"
+        cn release upload {{.CN_APPLICATION}} $CN_RELEASE_ID \
+          --public-platform dmg-aarch64 \
+          --file "./src-tauri/target/aarch64-apple-darwin/debug/bundle/dmg/{{.APP_NAME}}_{{.VERSION}}_aarch64.dmg"
+
+        echo "✓ All artifacts uploaded"
+
+  publish:
+    desc: Publish release
+    cmds:
+      - cn release publish {{.CN_APPLICATION}} --framework tauri
+
+  release:
+    desc: Complete test release pipeline
+    cmds:
+      - task: info
+      - 'echo "[1/5] Cleaning..."'
+      - rm -rf ./dist && cd ./src-tauri && cargo clean
+      - 'echo "[2/5] Installing dependencies..."'
+      - bun install && bun graphql-codegen
+      - 'echo "[3/5] Building..."'
+      - task: build-all
+      - 'echo "[4/5] Uploading..."'
+      - task: draft-and-upload
+      - 'echo "[5/5] Publishing..."'
+      - task: publish
+      - 'echo "Test release complete!"'
+
+  #============================================================================
+  # 信息任务
+  #============================================================================
+  info:
+    desc: Show test build information
+    silent: true
+    cmds:
+      - |
+        echo "┌─────────────────────────────────────┐"
+        echo "│       TEST BUILD INFORMATION        │"
+        echo "├─────────────────────────────────────┤"
+        echo "│ App:     {{.CN_APPLICATION}}"
+        echo "│ Mode:    {{.MODE}} (debug)"
+        echo "│ Version: {{.VERSION}}"
+        echo "│ Product: {{.APP_NAME}}"
+        echo "│ Config:  {{.CONFIG_FILE}}"
+        echo "└─────────────────────────────────────┘"

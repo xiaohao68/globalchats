@@ -1,0 +1,6 @@
+mutation SyncChatMessages($input: SyncChatMessagesInput!) {
+  syncChatMessages(input: $input) {
+    success
+    count
+  }
+}

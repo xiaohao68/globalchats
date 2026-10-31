@@ -1,0 +1,21 @@
+mutation ImLogin($input: ImLoginInput!) {
+  im {
+    login(input: $input) {
+      imUsers {
+        accessToken
+        imUser {
+          id
+          username
+          name
+          wsMemberId
+          loginAt
+          loginIp
+          position
+          createdAt
+          updatedAt
+          deletedAt
+        }
+      }
+    }
+  }
+}

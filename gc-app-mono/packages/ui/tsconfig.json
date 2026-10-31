@@ -1,0 +1,14 @@
+{
+  "extends": "@gc/typescript-config",
+  "compilerOptions": {
+    //"outDir": "dist"
+    "baseUrl": ".",
+    "paths": {
+      "@gc/ui/*": ["./src/*"],
+      "@gc/lib/*": ["./src/lib/*.ts"]
+    },
+    "allowImportingTsExtensions": true
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

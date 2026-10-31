@@ -1,0 +1,36 @@
+{
+  "name": "gc",
+  "version": "26.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.1",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter gc-app dev",
+    "build": "pnpm --filter gc-app build",
+    "start": "pnpm --filter gc-app start",
+    "lint": "pnpm --filter gc-app lint",
+    "typecheck": "pnpm --filter gc-app typecheck",
+    "test": "pnpm --filter gc-app test",
+    "clean": "pnpm --filter gc-app clean",
+    "db:generate": "pnpm --filter gc-app db:generate",
+    "db:migrate": "pnpm --filter gc-app db:migrate",
+    "db:deploy": "pnpm --filter gc-app db:deploy",
+    "db:reset": "pnpm --filter gc-app db:reset",
+    "db:push": "pnpm --filter gc-app db:push",
+    "db:seed": "pnpm --filter gc-app db:seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "bcrypt",
+      "sharp"
+    ]
+  }
+}

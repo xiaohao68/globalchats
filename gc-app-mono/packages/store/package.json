@@ -1,0 +1,31 @@
+{
+  "name": "@gc/store",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@gc/model": "workspace:*",
+    "@gc/typescript-config": "workspace:*",
+    "@gc/channel": "workspace:*",
+    "@gc/utils": "workspace:*",
+    "@gc/misc": "workspace:*"
+  },
+  "peerDependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/cli": "^2",
+    "@tauri-apps/plugin-log": "^2.7.1",
+    "@tauri-apps/plugin-shell": "^2",
+    "@tauri-apps/plugin-store": "^2.4.1",
+    "@types/lodash-es": "^4.17.12",
+    "lodash-es": "^4.17.21",
+    "zustand": "^5.0.8",
+    "typescript": "^5.9.3"
+  }
+}

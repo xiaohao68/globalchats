@@ -1,0 +1,25 @@
+query ImtpWhatsappAccountsConnection($input: ImtpWhatsAppAccountConnectionInput) {
+  imtp {
+    whatsapp {
+      accounts(input: $input) {
+        edges {
+          nodeId
+          lid
+          jid
+          hijackImUserId
+          assignImUserId
+          data
+          createdAt
+          updatedAt
+        }
+        totalCount
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+}

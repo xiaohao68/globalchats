@@ -1,0 +1,341 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String               @id
+  email             String               @unique
+  username          String?
+  avatar            String?
+  passwordHash      String
+  isEmailVerified   Boolean              @default(false)
+  status            String               @default("ACTIVE")
+  isAdmin           Boolean              @default(false)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  deletedAt         DateTime?
+  passwordResets    PasswordResetToken[]
+  memberships       UserWorkspace[]
+  workspaceMembers  WorkspaceMember[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id                    String                      @id
+  shardingKey           String                      @unique
+  shardingSeq           Int?                        @unique
+  displayName           String
+  subdomain             String?                     @unique
+  status                String                      @default("ACTIVE")
+  logo                  String?
+  inviteCode            String?                     @unique
+  inviteCodeEnabled     Boolean                     @default(true)
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+  deletedAt             DateTime?
+  memberships           UserWorkspace[]
+  members               WorkspaceMember[]
+  attachments           WorkspaceAttachment[]
+  translationEntries    WorkspaceTranslationEntry[]
+  whatsappAccounts      ImWhatsappAccount[]
+  whatsappConversations ImWhatsappConversation[]
+  whatsappMessages      ImWhatsappMessage[]
+  whatsappParticipants  ImWhatsappParticipant[]
+  imEvents              ImEventOutbox[]
+  imCommands            ImCommandOutbox[]
+
+  @@map("workspaces")
+}
+
+model UserWorkspace {
+  id          String    @id
+  userId      String
+  workspaceId String
+  role        String    @default("OWNER")
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("user_workspaces")
+}
+
+model PasswordResetToken {
+  id        String   @id
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+model EmailVerification {
+  id        String   @id
+  email     String
+  code      String
+  type      String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email, type, isUsed])
+  @@map("email_verifications")
+}
+
+model LoginAttempt {
+  id             String   @id
+  identifier     String
+  identifierType String
+  attemptCount   Int      @default(0)
+  lastAttemptAt  DateTime @default(now())
+  lockedUntil    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([identifier, identifierType])
+  @@map("login_attempts")
+}
+
+model Config {
+  id          String   @id
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("configs")
+}
+
+model Model {
+  id               String   @id
+  name             String
+  provider         String
+  region           String?
+  apiEndpoint      String?
+  apiKey           String?
+  apiFormat        String?
+  displayName      String
+  capabilities     Json?
+  inputPrice       Decimal? @db.Decimal(18, 6)
+  outputPrice      Decimal? @db.Decimal(18, 6)
+  markupMultiplier Decimal? @db.Decimal(18, 6)
+  maxTokens        Int?
+  maxOutputTokens  Int?
+  supportsStreaming Boolean @default(false)
+  isActive         Boolean  @default(true)
+  priority         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("models")
+}
+
+model WorkspaceMember {
+  id                 String    @id
+  workspaceId        String
+  userId             String
+  role               String    @default("OWNER")
+  status             String    @default("ACTIVE")
+  invitedAt          DateTime?
+  joinedAt           DateTime?
+  declinedAt         DateTime?
+  name               String?
+  bio                String?
+  themePreset        String    @default("lavender-dream")
+  themeRadius        String    @default("default")
+  themeScale         String    @default("none")
+  themeContentLayout String    @default("full")
+  themeMode          String    @default("light")
+  sidebarMode        String    @default("default")
+  language           String    @default("en")
+  loginAt            DateTime?
+  loginIp            String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@map("workspace_members")
+}
+
+model WorkspaceAttachment {
+  id         String    @id
+  workspaceId String
+  name       String
+  type       String
+  extension  String?
+  size       Int
+  folder     String
+  authorId   String?
+  appUserId  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, deletedAt])
+  @@map("workspace_attachments")
+}
+
+model WorkspaceTranslationEntry {
+  id              String    @id
+  workspaceId     String
+  shardingKey     String?
+  sourceText      String
+  sourceTextHash  String
+  sourceLang      String
+  destinationText String
+  destinationLang String
+  provider        String
+  hitCount        Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, sourceLang, destinationLang, sourceTextHash])
+  @@map("workspace_translation_entries")
+}
+
+model ImWhatsappAccount {
+  id                      String                  @id
+  workspaceId             String
+  lid                     String
+  jid                     String
+  hijackWorkspaceMemberId String?
+  assignWorkspaceMemberId String?
+  data                    Json?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  deletedAt               DateTime?
+  workspace               Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  conversations           ImWhatsappConversation[]
+  messages                ImWhatsappMessage[]
+  participants            ImWhatsappParticipant[]
+
+  @@unique([workspaceId, lid])
+  @@index([workspaceId, jid])
+  @@index([workspaceId, assignWorkspaceMemberId])
+  @@map("im_whatsapp_accounts")
+}
+
+model ImWhatsappConversation {
+  id                      String             @id
+  workspaceId             String
+  imWhatsappAccountId     String
+  jid                     String
+  assignWorkspaceMemberId String?
+  data                    Json?
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  deletedAt               DateTime?
+  workspace               Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  account                 ImWhatsappAccount  @relation(fields: [imWhatsappAccountId], references: [id], onDelete: Cascade)
+  messages                ImWhatsappMessage[]
+
+  @@unique([workspaceId, imWhatsappAccountId, jid])
+  @@index([workspaceId, assignWorkspaceMemberId])
+  @@map("im_whatsapp_conversations")
+}
+
+model ImWhatsappMessage {
+  id                       String                @id
+  workspaceId              String
+  imWhatsappAccountId      String
+  imWhatsappConversationId String
+  fromMe                   Boolean
+  remoteJid                String
+  messageId                String
+  participant              String?
+  participantAlt           String?
+  data                     Json?
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  deletedAt                DateTime?
+  workspace                Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  account                  ImWhatsappAccount     @relation(fields: [imWhatsappAccountId], references: [id], onDelete: Cascade)
+  conversation             ImWhatsappConversation @relation(fields: [imWhatsappConversationId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, imWhatsappAccountId, fromMe, remoteJid, messageId])
+  @@index([workspaceId, imWhatsappConversationId, createdAt])
+  @@map("im_whatsapp_messages")
+}
+
+model ImWhatsappParticipant {
+  id                  String            @id
+  workspaceId         String
+  imWhatsappAccountId String
+  lid                 String
+  jid                 String
+  data                Json?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  deletedAt           DateTime?
+  workspace           Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  account             ImWhatsappAccount @relation(fields: [imWhatsappAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, imWhatsappAccountId, lid])
+  @@index([workspaceId, imWhatsappAccountId, jid])
+  @@map("im_whatsapp_participants")
+}
+
+model ImEventOutbox {
+  seq             Int       @id @default(autoincrement())
+  workspaceId     String
+  eventId         String    @unique
+  provider        String
+  scopeType       String
+  scopeId         String
+  entityType      String
+  eventType       String
+  dedupeKey       String
+  channels        Json
+  payload         Json
+  schemaVersion   Int       @default(1)
+  occurredAt      DateTime
+  publishAttempts Int       @default(0)
+  publishedAt     DateTime?
+  lastError       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, publishedAt, seq])
+  @@map("im_event_outbox")
+}
+
+model ImCommandOutbox {
+  seq           Int       @id @default(autoincrement())
+  workspaceId   String
+  commandId     String    @unique
+  provider      String
+  accountId     String
+  conversationId String?
+  commandType   String
+  payload       Json
+  status        String    @default("PENDING")
+  occurredAt    DateTime
+  ackedAt       DateTime?
+  lastError     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, provider, accountId, status, seq])
+  @@map("im_command_outbox")
+}

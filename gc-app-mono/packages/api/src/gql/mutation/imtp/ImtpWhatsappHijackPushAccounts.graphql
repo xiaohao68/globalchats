@@ -1,0 +1,30 @@
+mutation ImtpWhatsappHijackPushAccounts(
+  $accounts: [SyncWhatsappAccountInput!]!
+  $hijackImUserId: String
+  $assignImUserId: String
+) {
+  imtp {
+    whatsapp {
+      hijackPushAccounts(
+        accounts: $accounts
+        hijackImUserId: $hijackImUserId
+        assignImUserId: $assignImUserId
+      ) {
+        successCount
+        failedCount
+        results {
+          lid
+          success
+          error
+          account {
+            id
+            lid
+            jid
+            hijackImUserId
+            assignImUserId
+          }
+        }
+      }
+    }
+  }
+}

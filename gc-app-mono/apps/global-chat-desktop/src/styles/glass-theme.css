@@ -1,0 +1,308 @@
+/* =====================================================
+   Global Chats - WhatsApp Light Theme
+   暖米色 + 白色面板 + 绿色强调 + 红色角标
+   ===================================================== */
+
+:root {
+  /* Core Background Colors - Warm Beige Theme */
+  --gc-bg-primary: #EFEAE2;
+  --gc-bg-secondary: #FFFFFF;
+  --gc-bg-tertiary: #F7F6F3;
+
+  /* Surface Levels (light theme) */
+  --gc-surface-1: rgba(0, 0, 0, 0.02);
+  --gc-surface-2: rgba(0, 0, 0, 0.04);
+  --gc-surface-3: rgba(0, 0, 0, 0.06);
+  --gc-surface-4: rgba(0, 0, 0, 0.08);
+
+  /* Text Colors */
+  --gc-text-primary: #1A1A1A;
+  --gc-text-secondary: #666666;
+  --gc-text-tertiary: #999999;
+  --gc-text-muted: #CCCCCC;
+
+  /* Brand Colors - WhatsApp Green */
+  --gc-brand: #25D366;
+  --gc-brand-gradient-start: #25D366;
+  --gc-brand-gradient-end: #128C7E;
+  --gc-brand-glow: rgba(37, 211, 102, 0.3);
+
+  /* Platform Colors */
+  --gc-platform-telegram: #0088CC;
+  --gc-platform-tiktok: #69C9D0;
+  --gc-platform-linkedin: #0A66C2;
+  --gc-platform-messenger: #006AFF;
+  --gc-platform-facebook: #1877F2;
+  --gc-platform-teams: #6264A7;
+
+  /* Status Colors */
+  --gc-success: #25D366;
+  --gc-warning: #FF9500;
+  --gc-error: #FF3B30;
+
+  /* Border Colors */
+  --gc-border-1: #E0DDD6;
+  --gc-border-2: #D3D1C7;
+  --gc-border-3: #B4B2A9;
+
+  /* Chat Bubble Colors */
+  --gc-bubble-in: #FFFFFF;
+  --gc-bubble-out: #DCF8C6;
+  --gc-bubble-out-text: #333333;
+  --gc-bubble-in-text: #333333;
+
+  /* Shadows (lighter for light theme) */
+  --gc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --gc-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --gc-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --gc-shadow-glow: 0 0 12px var(--gc-brand-glow);
+
+  /* Transitions */
+  --gc-transition-fast: 150ms ease;
+  --gc-transition-normal: 250ms ease;
+  --gc-transition-slow: 350ms ease;
+
+  /* Border Radius */
+  --gc-radius-sm: 8px;
+  --gc-radius-md: 12px;
+  --gc-radius-lg: 16px;
+  --gc-radius-xl: 20px;
+  --gc-radius-full: 9999px;
+}
+
+/* Body base */
+body {
+  background: var(--gc-bg-primary) !important;
+  color: var(--gc-text-primary) !important;
+}
+
+/* Surface Utility Classes (replaces glass classes) */
+.gc-glass {
+  background: var(--gc-bg-secondary);
+  border: 1px solid var(--gc-border-1);
+}
+
+.gc-glass-l1 {
+  background: var(--gc-bg-secondary);
+  border: 1px solid var(--gc-border-1);
+}
+
+.gc-glass-l2 {
+  background: var(--gc-bg-tertiary);
+  border: 1px solid var(--gc-border-1);
+}
+
+.gc-glass-l3 {
+  background: var(--gc-bg-tertiary);
+  border: 1px solid var(--gc-border-2);
+}
+
+.gc-glass-l4 {
+  background: var(--gc-surface-2);
+  border: 1px solid var(--gc-border-2);
+}
+
+.gc-glass-card {
+  background: var(--gc-bg-secondary);
+  border: 1px solid var(--gc-border-1);
+  border-radius: var(--gc-radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.gc-glass-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gc-border-1), transparent);
+}
+
+/* Platform sidebar icon */
+.platform-icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--gc-surface-2);
+}
+
+.platform-icon:hover {
+  background: var(--gc-surface-3);
+  transform: scale(1.05);
+}
+
+.platform-icon.active {
+  background: var(--gc-platform-telegram);
+  box-shadow: 0 2px 8px rgba(0, 136, 204, 0.3);
+}
+
+.platform-icon.active svg {
+  fill: white !important;
+}
+
+/* Unread badge */
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--gc-error);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid var(--gc-bg-secondary);
+}
+
+/* Chat bubbles */
+.msg-in {
+  align-self: flex-start;
+  max-width: 65%;
+  background: var(--gc-bubble-in);
+  color: var(--gc-bubble-in-text);
+  border-radius: 12px 12px 12px 2px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.msg-out {
+  align-self: flex-end;
+  max-width: 65%;
+  background: var(--gc-bubble-out);
+  color: var(--gc-bubble-out-text);
+  border-radius: 12px 12px 2px 12px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Send button */
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gc-brand);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+
+.send-btn:hover {
+  transform: scale(1.08);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+/* Aggregate button */
+.aggregate-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #E1F5EE;
+  transition: all 0.2s;
+  border: 1px solid #9FE1CB;
+}
+
+.aggregate-btn:hover {
+  background: #C5EAD8;
+}
+
+.aggregate-btn.active {
+  background: var(--gc-brand);
+  border-color: var(--gc-brand);
+}
+
+.aggregate-btn.active svg {
+  fill: white !important;
+}
+
+/* Online dot */
+.online-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--gc-brand);
+  border: 2px solid var(--gc-bg-secondary);
+}
+
+/*
+ * Unread dot（客户列表 / 聚合列表右侧的「客户来信」提示）
+ * 产品约定：只用一个红点表示「这个客户有新消息」，不显示条数（对齐微信）；
+ * 点开该客户卡片后红点消失。
+ */
+.unread-dot {
+  display: block;
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--gc-error);
+}
+
+/* Unread badge（左侧平台栏等仍需要显示条数的地方） */
+.unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--gc-error);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Animation Keyframes */
+@keyframes gc-fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gc-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.fade-in {
+  animation: gc-fade-in-up 0.3s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--gc-border-2);
+  border-radius: var(--gc-radius-full);
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--gc-border-3); }

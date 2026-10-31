@@ -1,0 +1,87 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "global-chats",
+  "version": "1.3.0",
+  "identifier": "com.global-chats.app",
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist/render"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Global Chats",
+        "width": 1366,
+        "height": 768,
+        "minWidth": 1366,
+        "minHeight": 768,
+        "center": true,
+        "titleBarStyle": "Transparent",
+        "acceptFirstMouse": true,
+        "visible": true,
+        "visibleOnAllWorkspaces": false,
+        "shadow": true,
+        "resizable": true,
+        "transparent": true,
+        "decorations": false,
+        "devtools": true,
+        "dragDropEnabled": false
+      },
+      {
+        "label": "secondary",
+        "title": "侧边栏",
+        "titleBarStyle": "Transparent",
+        "acceptFirstMouse": false,
+        "visible": false,
+        "visibleOnAllWorkspaces": false,
+        "alwaysOnTop": true,
+        "shadow": true,
+        "resizable": false,
+        "transparent": true,
+        "decorations": false,
+        "devtools": true,
+        "dragDropEnabled": false
+      }
+    ],
+    "macOSPrivateApi": true,
+    "security": {
+      "csp": null
+    },
+    "withGlobalTauri": true
+  },
+  "bundle": {
+    "macOS": {
+      "minimumSystemVersion": "14.0",
+      "signingIdentity": "3G32VFCS82"
+    },
+    "createUpdaterArtifacts": true,
+    "active": true,
+    "targets": [
+      "app",
+      "dmg",
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUxRTI3MTQ2MTU4OEJDQjQKUldTMHZJZ1ZSbkhpVVFyZ0tHQ2hrYmRTZ3kxOTl5bHAzZU5WMEpodC90ZVU5blM2RncrcVprZGMK",
+      "endpoints": [
+        "https://cdn.crabnebula.app/update/chathub/global-chats/{{target}}-{{arch}}/{{current_version}}"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@gc/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@gc/typescript-config": "workspace:*",
+    "@gc/model": "workspace:*"
+  },
+  "peerDependencies": {
+    "i18next": "^25.6.0",
+    "react-i18next": "^16.2.4",
+    "typescript": "^5.9.3"
+  }
+}

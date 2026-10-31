@@ -1,0 +1,6 @@
+mutation SyncContacts($input: SyncContactsInput!) {
+  syncContacts(input: $input) {
+    success
+    count
+  }
+}

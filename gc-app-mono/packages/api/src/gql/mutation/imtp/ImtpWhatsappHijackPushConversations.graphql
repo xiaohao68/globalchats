@@ -1,0 +1,15 @@
+mutation ImtpWhatsappHijackPushConversations(
+  $input: ImtpWhatsappHijackPushConversationsInput!
+) {
+  imtp {
+    whatsapp {
+      hijackPushConversations(input: $input) {
+        inserted
+        updated
+        skipped
+        failed
+        failedJids
+      }
+    }
+  }
+}

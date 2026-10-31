@@ -1,0 +1,23 @@
+{
+  "name": "@gc/logger",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@tauri-apps/plugin-log": "^2.7.1",
+    "@tauri-apps/api": "^2.9.0"
+  },
+  "devDependencies": {
+    "@gc/typescript-config": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

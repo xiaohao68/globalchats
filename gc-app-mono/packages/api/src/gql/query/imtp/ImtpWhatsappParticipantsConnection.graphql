@@ -1,0 +1,22 @@
+query ImtpWhatsappParticipantsConnection($input: ImtpWhatsAppParticipantConnectionInput) {
+  imtp {
+    whatsapp {
+      participants(input: $input) {
+        edges {
+          nodeId
+          jid
+          lid
+          imtpWhatsappAccountId
+          data
+          createdAt
+          updatedAt
+        }
+        totalCount
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+}

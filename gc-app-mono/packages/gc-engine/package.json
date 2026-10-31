@@ -1,0 +1,53 @@
+{
+  "name": "@gc/gc-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@gc/api": "workspace:*",
+    "@gc/app-init": "workspace:*",
+    "@gc/i18n": "workspace:*",
+    "@gc/logger": "workspace:*",
+    "@gc/misc": "workspace:*",
+    "@gc/model": "workspace:*",
+    "@gc/store": "workspace:*",
+    "@gc/typescript-config": "workspace:*",
+    "@gc/ui": "workspace:*",
+    "@gc/utils": "workspace:*",
+    "@gc/webview": "workspace:*",
+    "@rollup/plugin-graphql": "^2.0.5",
+    "@types/next-tick": "^1.0.2",
+    "axios": "^1.7.9",
+    "dexie": "^4.0.11",
+    "ldrs": "^1.1.6",
+    "mitt": "^3.0.1",
+    "motion": "^12.23.24",
+    "next-tick": "^1.1.0",
+    "telegram": "^2.26.22",
+    "zod": "^3.25.0",
+    "zustand": "^5.0.8"
+  },
+  "peerDependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/cli": "^2",
+    "@tauri-apps/plugin-log": "^2.7.1",
+    "@tauri-apps/plugin-shell": "^2",
+    "@tauri-apps/plugin-store": "^2.4.1",
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "lucide-react": "^0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "js-sdsl": "^4.4.2",
+    "lodash-es": "^4.17.21",
+    "typescript": "^5.9.3"
+  }
+}

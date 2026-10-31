@@ -1,0 +1,25 @@
+{
+  "name": "@gc/model",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@gc/typescript-config": "workspace:*"
+  },
+  "peerDependencies": {
+    "@gc/store": "workspace:*",
+    "@types/lodash-es": "^4.17.12",
+    "@types/semver": "^7.7.1",
+    "lodash-es": "^4.17.21",
+    "typescript": "^5.9.3",
+    "uuid": "^13.0.0",
+    "semver": "^7.7.3"
+  }
+}

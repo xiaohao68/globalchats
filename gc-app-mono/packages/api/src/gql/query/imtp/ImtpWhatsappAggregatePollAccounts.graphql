@@ -1,0 +1,21 @@
+query ImtpWhatsappAggregatePollAccounts($input: GetWhatsappAccountsInput!) {
+  imtp {
+    whatsapp {
+      aggregatePollAccounts(input: $input) {
+        items {
+          id
+          lid
+          jid
+          data
+          hijackImUserId
+          assignImUserId
+          createdAt
+          updatedAt
+        }
+        foundCount
+        totalCount
+        notFoundIds
+      }
+    }
+  }
+}

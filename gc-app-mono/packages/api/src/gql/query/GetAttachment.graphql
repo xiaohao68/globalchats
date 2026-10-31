@@ -1,0 +1,10 @@
+query GetAttachment {
+  attachments {
+    id
+    url
+    name
+    extension
+    folder
+    type
+  }
+}

@@ -1,0 +1,12 @@
+query GetContacts($accountId: String!) {
+  getContacts(accountId: $accountId) {
+    id
+    accountId
+    contactId
+    nickname
+    avatar
+    platform
+    version
+    updatedAt
+  }
+}

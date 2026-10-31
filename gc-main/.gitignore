@@ -1,0 +1,79 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+.nuxt/
+.output/
+out/
+
+# Cache
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# Environment
+/.env
+/.env.local
+/.env.*.local
+.env
+.env.local
+.env.*.local
+ecosystem.config.cjs
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Docker
+.docker/
+.docker-build-cache/
+
+# Docker
+/docker-compose.yml
+
+# Temporary
+tmp/
+temp/
+
+# Data directories
+data/
+var/
+var-tests/
+
+# SQLite database files
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Admin credentials (generated)
+*-admin.json
+
+# Media
+*.mov
+aaa/frames/*.jpg
+aaa/frames/*.png
+
+# Worktrees
+.worktrees/
+
+# Spec Workflow
+.spec-workflow/

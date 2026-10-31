@@ -1,0 +1,25 @@
+query GetChatMessages(
+  $accountId: String!
+  $limit: Int
+  $offset: Int
+  $startTime: Float
+  $endTime: Float
+) {
+  getChatMessages(
+    accountId: $accountId
+    limit: $limit
+    offset: $offset
+    startTime: $startTime
+    endTime: $endTime
+  ) {
+    id
+    accountId
+    chatId
+    senderId
+    content
+    timestamp
+    messageType
+    version
+    updatedAt
+  }
+}

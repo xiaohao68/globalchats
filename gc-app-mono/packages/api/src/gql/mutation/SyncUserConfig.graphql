@@ -1,0 +1,7 @@
+mutation SyncUserConfig($input: SyncUserConfigInput!) {
+  syncUserConfig(input: $input) {
+    success
+    version
+    updatedAt
+  }
+}

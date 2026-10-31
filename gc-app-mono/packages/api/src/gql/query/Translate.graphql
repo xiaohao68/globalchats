@@ -1,0 +1,7 @@
+query Translate($translateId: UUID!, $texts: [String!]!, $sourceLang: String, $destinationLang: String, $forceUpdateCache: Boolean) {
+    translate(id: $translateId, texts: $texts, sourceLang: $sourceLang, destinationLang: $destinationLang, forceUpdateCache: $forceUpdateCache) {
+        code
+        index
+        text
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@gc/misc",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@gc/typescript-config": "workspace:*",
+    "@gc/utils": "workspace:*"
+  },
+  "peerDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^19.0.0",
+    "js-sdsl": "^4.4.2",
+    "lodash-es": "^4.17.21",
+    "react": "^19.0.0",
+    "type-fest": "^4.41.0",
+    "typescript": "^5.9.3"
+  }
+}

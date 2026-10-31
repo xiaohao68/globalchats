@@ -1,0 +1,17 @@
+{
+  "extends": "@gc/typescript-config",
+  "compilerOptions": {
+    "allowJs": true
+  },
+  "include": [
+    "src",
+    "src-preload"
+  ],
+  "exclude": [
+    "node_modules",
+    "src-tauri",
+    "dist",
+    "release",
+    "build"
+  ]
+}

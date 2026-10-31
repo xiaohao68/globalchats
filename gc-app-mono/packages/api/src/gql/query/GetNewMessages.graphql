@@ -1,0 +1,9 @@
+query GetNewMessages($lastTimestamp: Float) {
+  getNewMessages(lastTimestamp: $lastTimestamp) {
+    id
+    content
+    senderId
+    receiverId
+    timestamp
+  }
+}

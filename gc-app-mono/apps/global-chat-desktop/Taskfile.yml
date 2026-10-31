@@ -1,0 +1,316 @@
+version: '3'
+
+vars:
+  PROJECT_NAME: Global Chat Desktop
+  # 默认环境
+  ENV: '{{.ENV | default "test"}}'
+
+tasks:
+  #============================================================================
+  # 帮助系统
+  #============================================================================
+  help:
+    desc: Show available commands
+    silent: true
+    cmds:
+      - |
+        echo "=== {{.PROJECT_NAME}} Task Commands ==="
+        echo ""
+        echo "🚀 Development:"
+        echo "  task dev              - Start frontend dev server (bun dev)"
+        echo "  task tauri            - Start Tauri dev mode (cargo tauri dev)"
+        echo "  task dev:all          - Start both frontend + Tauri (parallel)"
+        echo ""
+        echo "🔧 Build:"
+        echo "  task build            - Build for current env (default: test)"
+        echo "  task build:test       - Build test version (debug)"
+        echo "  task build:prod       - Build production version (release)"
+        echo "  task build:macos      - Build macOS only"
+        echo "  task build:windows    - Build Windows only (cross-compile)"
+        echo ""
+        echo "📦 Release:"
+        echo "  task release:test     - Full test release pipeline"
+        echo "  task release:prod     - Full production release pipeline"
+        echo ""
+        echo "🧹 Maintenance:"
+        echo "  task clean            - Clean all (dist + cargo)"
+        echo "  task clean:dist       - Clean frontend dist only"
+        echo "  task clean:cargo      - Clean cargo cache only"
+        echo "  task install          - Install all dependencies"
+        echo ""
+        echo "🔍 Debug & Info:"
+        echo "  task info             - Show build info"
+        echo "  task info:env         - Show environment variables"
+        echo "  task logs             - Tail application logs"
+        echo "  task doctor           - Check development environment"
+        echo ""
+        echo "🧪 Testing:"
+        echo "  task test:e2e         - Run all E2E tests"
+        echo "  task test:e2e:app     - Run app tests only"
+        echo "  task test:e2e:platforms - Run platform tests only"
+        echo "  task test:e2e:ui      - Run with Playwright UI"
+        echo "  task test:e2e:headed  - Run in headed mode"
+        echo "  task test:e2e:report  - Show test report"
+        echo ""
+        echo "Use 'task --list' for all tasks, 'task <cmd> --help' for details"
+
+  default:
+    deps: [help]
+
+  #============================================================================
+  # 开发命令
+  #============================================================================
+  dev:
+    desc: Start frontend dev server
+    cmds:
+      - task -t Taskfile.test.yml dev
+
+  tauri:
+    desc: Start Tauri development mode
+    cmds:
+      - task -t Taskfile.test.yml tauri-dev
+
+  dev:all:
+    desc: Start frontend + Tauri in parallel
+    cmds:
+      - task -t Taskfile.test.yml dev-all
+
+  #============================================================================
+  # 构建命令
+  #============================================================================
+  build:
+    desc: Build for current environment
+    cmds:
+      - task: 'build:{{.ENV}}'
+
+  build:test:
+    desc: Build test version (debug mode)
+    cmds:
+      - task -t Taskfile.test.yml build-all
+
+  build:prod:
+    desc: Build production version (release mode)
+    cmds:
+      - task -t Taskfile.production.yml build-all
+
+  build:macos:
+    desc: Build for macOS only
+    cmds:
+      - task -t Taskfile.{{.ENV}}.yml build-macos
+
+  build:windows:
+    desc: Build for Windows only (cross-compile)
+    cmds:
+      - task -t Taskfile.{{.ENV}}.yml build-xwindows-x64
+
+  #============================================================================
+  # 发布命令
+  #============================================================================
+  release:test:
+    desc: Full test release pipeline
+    cmds:
+      - task -t Taskfile.test.yml release
+
+  release:prod:
+    desc: Full production release pipeline
+    cmds:
+      - task -t Taskfile.production.yml release
+
+  #============================================================================
+  # E2E 测试命令
+  #============================================================================
+  test:e2e:
+    desc: Run all E2E tests
+    cmds:
+      - bunx playwright test
+
+  test:e2e:app:
+    desc: Run app E2E tests only
+    cmds:
+      - bunx playwright test --project=app
+
+  test:e2e:chat:
+    desc: Run chat E2E tests only
+    cmds:
+      - bunx playwright test --project=chat
+
+  test:e2e:platforms:
+    desc: Run platform E2E tests only
+    cmds:
+      - bunx playwright test --project=platforms
+
+  test:e2e:ui:
+    desc: Run E2E tests with UI mode
+    cmds:
+      - bunx playwright test --ui
+
+  test:e2e:debug:
+    desc: Run E2E tests in debug mode
+    cmds:
+      - bunx playwright test --debug
+
+  test:e2e:headed:
+    desc: Run E2E tests in headed mode (visible browser)
+    cmds:
+      - bunx playwright test --headed
+
+  test:e2e:report:
+    desc: Show E2E test report
+    cmds:
+      - bunx playwright show-report test-results/html
+
+  #============================================================================
+  # 清理命令
+  #============================================================================
+  clean:
+    desc: Clean all build artifacts
+    cmds:
+      - rm -rf ./dist
+      - cd ./src-tauri && cargo clean
+      - echo "✓ Cleaned dist/ and cargo cache"
+
+  clean:dist:
+    desc: Clean frontend dist only
+    cmds:
+      - rm -rf ./dist
+      - echo "✓ Cleaned dist/"
+
+  clean:cargo:
+    desc: Clean cargo cache only
+    dir: ./src-tauri
+    cmds:
+      - cargo clean
+      - echo "✓ Cleaned cargo cache"
+
+  #============================================================================
+  # 安装命令
+  #============================================================================
+  install:
+    desc: Install all dependencies
+    cmds:
+      - bun install
+      - bun graphql-codegen
+      - echo "✓ Dependencies installed"
+
+  install:rust:
+    desc: Setup Rust compilation targets
+    cmds:
+      - rustup target add x86_64-apple-darwin
+      - rustup target add aarch64-apple-darwin
+      - rustup target add x86_64-pc-windows-msvc
+    status:
+      - rustup target list --installed | grep -q x86_64-apple-darwin
+      - rustup target list --installed | grep -q aarch64-apple-darwin
+      - rustup target list --installed | grep -q x86_64-pc-windows-msvc
+
+  #============================================================================
+  # 信息和调试
+  #============================================================================
+  info:
+    desc: Show build information for all environments
+    silent: true
+    cmds:
+      - echo "=== Test Environment ==="
+      - task -t Taskfile.test.yml info
+      - echo ""
+      - echo "=== Production Environment ==="
+      - task -t Taskfile.production.yml info
+
+  info:env:
+    desc: Show current environment variables
+    silent: true
+    cmds:
+      - |
+        echo "=== Environment Variables ==="
+        echo "NODE_ENV: ${NODE_ENV:-not set}"
+        echo "MODE: ${MODE:-not set}"
+        echo "SENTRY_DSN: ${SENTRY_DSN:-not set}"
+        echo ""
+        echo "=== Tool Versions ==="
+        echo "Node: $(node -v 2>/dev/null || echo 'not installed')"
+        echo "Bun: $(bun -v 2>/dev/null || echo 'not installed')"
+        echo "Rust: $(rustc --version 2>/dev/null || echo 'not installed')"
+        echo "Cargo: $(cargo --version 2>/dev/null || echo 'not installed')"
+        echo "Tauri CLI: $(cargo tauri --version 2>/dev/null || echo 'not installed')"
+
+  logs:
+    desc: Tail application logs
+    silent: true
+    cmds:
+      - |
+        LOG_DIR="$HOME/Library/Logs/{{.PROJECT_NAME}}"
+        if [ -d "$LOG_DIR" ]; then
+          tail -f "$LOG_DIR"/*.log 2>/dev/null || echo "No log files found"
+        else
+          echo "Log directory not found: $LOG_DIR"
+          echo "Try running the app first"
+        fi
+
+  doctor:
+    desc: Check development environment
+    silent: true
+    cmds:
+      - |
+        echo "=== Development Environment Check ==="
+        echo ""
+
+        # Node.js
+        if command -v node &> /dev/null; then
+          echo "✓ Node.js $(node -v)"
+        else
+          echo "✗ Node.js not installed"
+        fi
+
+        # Bun
+        if command -v bun &> /dev/null; then
+          echo "✓ Bun $(bun -v)"
+        else
+          echo "✗ Bun not installed"
+        fi
+
+        # Rust
+        if command -v rustc &> /dev/null; then
+          echo "✓ Rust $(rustc --version | cut -d' ' -f2)"
+        else
+          echo "✗ Rust not installed"
+        fi
+
+        # Tauri CLI
+        if cargo tauri --version &> /dev/null; then
+          echo "✓ Tauri CLI $(cargo tauri --version | cut -d' ' -f2)"
+        else
+          echo "✗ Tauri CLI not installed (run: cargo install tauri-cli)"
+        fi
+
+        # jq
+        if command -v jq &> /dev/null; then
+          echo "✓ jq $(jq --version)"
+        else
+          echo "✗ jq not installed (run: brew install jq)"
+        fi
+
+        # Rust targets
+        echo ""
+        echo "=== Rust Targets ==="
+        rustup target list --installed 2>/dev/null | grep -E "(apple|windows)" || echo "No cross-compile targets"
+
+        # Project check
+        echo ""
+        echo "=== Project Check ==="
+        if [ -f "package.json" ]; then
+          echo "✓ package.json found"
+        else
+          echo "✗ package.json not found"
+        fi
+
+        if [ -f "src-tauri/Cargo.toml" ]; then
+          echo "✓ src-tauri/Cargo.toml found"
+        else
+          echo "✗ src-tauri/Cargo.toml not found"
+        fi
+
+        if [ -f "src-tauri/tauri.conf.json" ]; then
+          echo "✓ Tauri config found"
+        else
+          echo "✗ Tauri config not found"
+        fi
